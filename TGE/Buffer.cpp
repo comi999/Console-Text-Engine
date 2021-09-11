@@ -1,4 +1,8 @@
+#include <string_view>
+
 #include "Buffer.hpp"
+
+using namespace std;
 
 Buffer::Buffer( int a_Width, int a_Height, int a_PixelWidth, int a_PixelHeight )
     : m_PixelWidth( a_PixelWidth ), m_PixelHeight( a_PixelHeight )
@@ -47,15 +51,31 @@ void Buffer::ResetBuffer()
     SetBuffer( blank );
 }
 
-void Buffer::SetBuffer( const CharInfo& a_CharInfo )
+void Buffer::SetBuffer( CharInfo a_CharInfo )
 {
     int size = 4 * m_Width * m_Height;
     memset( m_Buffer, 0, size );
 }
 
-void Buffer::SetCharacter( const CharInfo& a_CharInfo, int a_X, int a_Y )
+void Buffer::SetCharacter( CharInfo a_CharInfo, Vec2 a_Position )
 {
-    m_Buffer[ m_Width * a_Y + a_X ] = a_CharInfo;
+    m_Buffer[ m_Width * a_Position.Y + a_Position.X ] = a_CharInfo;
+}
+
+void Buffer::SetLine( const char* a_String, size_t a_Count, Vec2 a_Postion )
+{
+    if ( a_Count < 0 )
+    {
+        a_Count = strlen( a_String );
+    }
+
+    CharInfo* begin = m_Buffer + static_cast< size_t >( m_Width ) * a_Postion.Y + a_Postion.X;
+    //auto iter = 
+}
+
+void Buffer::SetLine( const char* a_String, size_t a_Count, Vec2 a_Postion, CharInfo a_CharInfo )
+{
+
 }
 
 void Buffer::DrawTextBlock( const TextBlock& a_TextBlock )
@@ -63,7 +83,7 @@ void Buffer::DrawTextBlock( const TextBlock& a_TextBlock )
     if ( a_TextBlock.BorderWidth > 0 )
     {
         CharInfo* top = m_Buffer + static_cast< size_t >( m_Width ) * a_TextBlock.Pos.Y + a_TextBlock.Pos.X;
-        CharInfo* bottom = top + static_cast< size_t >( m_Width ) * ( static_cast< size_t >( a_TextBlock.Size.Y ) - a_TextBlock.BorderWidth );
+        CharInfo* bottom = top + m_Width * ( static_cast< size_t >( a_TextBlock.Size.Y ) - a_TextBlock.BorderWidth );
 
         for ( int i = 0; i < a_TextBlock.BorderWidth; ++i )
         {
@@ -90,6 +110,13 @@ void Buffer::DrawTextBlock( const TextBlock& a_TextBlock )
             top += m_Width;
             bottom += m_Width;
         }
+    }
+
+    auto iter = a_TextBlock.Text.begin();
+
+    while ( iter != a_TextBlock.Text.end() )
+    {
+
     }
 }
 

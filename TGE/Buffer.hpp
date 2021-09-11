@@ -12,11 +12,12 @@ public:
 	~Buffer();
 
 	void ResetBuffer();
-	void SetBuffer( const CharInfo& a_CharInfo );
+	void SetBuffer( CharInfo a_CharInfo );
 	void UpdateBuffer();
 	void UpdateBuffer( const Rect& a_Rect );
-	void SetCharacter( const CharInfo& a_CharInfo, int a_X, int a_Y );
-
+	void SetCharacter( CharInfo a_CharInfo, Vec2 a_Position );
+	void SetLine( const char* a_String, size_t a_Count, Vec2 a_Postion );
+	void SetLine( const char* a_String, size_t a_Count, Vec2 a_Postion, CharInfo a_CharInfo );
 	void DrawTextBlock( const TextBlock& a_TextBlock );
 
 private:
