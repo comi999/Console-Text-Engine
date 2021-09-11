@@ -69,8 +69,15 @@ void Buffer::SetLine( const char* a_String, size_t a_Count, Vec2 a_Postion )
         a_Count = strlen( a_String );
     }
 
-    CharInfo* begin = m_Buffer + static_cast< size_t >( m_Width ) * a_Postion.Y + a_Postion.X;
-    //auto iter = 
+    CharInfo* start = m_Buffer + static_cast< size_t >( m_Width ) * a_Postion.Y + a_Postion.X;
+    CharInfo* end = start + a_Count;
+
+    while ( start != end )
+    {
+        start->Ascii() = *a_String;
+        ++start;
+        ++a_String;
+    }
 }
 
 void Buffer::SetLine( const char* a_String, size_t a_Count, Vec2 a_Postion, CharInfo a_CharInfo )
