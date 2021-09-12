@@ -1,4 +1,5 @@
 #include <string_view>
+#include <list>
 
 #include "Buffer.hpp"
 
@@ -53,8 +54,7 @@ void Buffer::ResetBuffer()
 
 void Buffer::SetBuffer( CharInfo a_CharInfo )
 {
-    int size = 4 * m_Width * m_Height;
-    memset( m_Buffer, 0, size );
+    memset( m_Buffer, 0, static_cast< size_t >( 4 ) * m_Width * m_Height );
 }
 
 void Buffer::SetCharacter( CharInfo a_CharInfo, Vec2 a_Position )
@@ -62,15 +62,10 @@ void Buffer::SetCharacter( CharInfo a_CharInfo, Vec2 a_Position )
     m_Buffer[ m_Width * a_Position.Y + a_Position.X ] = a_CharInfo;
 }
 
-void Buffer::SetLine( const char* a_String, size_t a_Count, Vec2 a_Postion )
+void Buffer::SetLine( const char* a_String, Vec2 a_Position )
 {
-    if ( a_Count < 0 )
-    {
-        a_Count = strlen( a_String );
-    }
-
-    CharInfo* start = m_Buffer + static_cast< size_t >( m_Width ) * a_Postion.Y + a_Postion.X;
-    CharInfo* end = start + a_Count;
+    CharInfo* start = m_Buffer + static_cast< size_t >( m_Width ) * a_Position.Y + a_Position.X;
+    CharInfo* end   = m_Buffer + min( strlen( a_String ), static_cast< size_t >( m_Width ) * m_Height );
 
     while ( start != end )
     {
@@ -80,9 +75,47 @@ void Buffer::SetLine( const char* a_String, size_t a_Count, Vec2 a_Postion )
     }
 }
 
-void Buffer::SetLine( const char* a_String, size_t a_Count, Vec2 a_Postion, CharInfo a_CharInfo )
+void Buffer::SetLine( const char* a_String, Vec2 a_Position, CharInfo a_CharInfo )
 {
+    CharInfo* start = m_Buffer + static_cast< size_t >( m_Width ) * a_Position.Y + a_Position.X;
+    CharInfo* end = m_Buffer + min( strlen( a_String ), static_cast< size_t >( m_Width ) * m_Height );
 
+    while ( start != end )
+    {
+        a_CharInfo.Ascii() = *a_String;
+        *start = a_CharInfo;
+        ++start;
+        ++a_String;
+    }
+}
+
+void Buffer::SetLine( const char* a_String, size_t a_Count, Vec2 a_Position )
+{
+    CharInfo* start = m_Buffer + static_cast< size_t >( m_Width ) * a_Position.Y + a_Position.X;
+    CharInfo* end = m_Buffer + min( static_cast< size_t >( m_Width ) * a_Position.Y + a_Position.X + a_Count, 
+                                    static_cast< size_t >( m_Width ) * m_Height );
+
+    while ( start != end )
+    {
+        start->Ascii() = *a_String;
+        ++start;
+        ++a_String;
+    }
+}
+
+void Buffer::SetLine( const char* a_String, size_t a_Count, Vec2 a_Position, CharInfo a_CharInfo )
+{
+    CharInfo* start = m_Buffer + static_cast< size_t >( m_Width ) * a_Position.Y + a_Position.X;
+    CharInfo* end = m_Buffer + min( static_cast< size_t >( m_Width ) * a_Position.Y + a_Position.X + a_Count,
+                                    static_cast< size_t >( m_Width ) * m_Height );
+
+    while ( start != end )
+    {
+        a_CharInfo.Ascii() = *a_String;
+        *start = a_CharInfo;
+        ++start;
+        ++a_String;
+    }
 }
 
 void Buffer::DrawTextBlock( const TextBlock& a_TextBlock )
@@ -119,11 +152,79 @@ void Buffer::DrawTextBlock( const TextBlock& a_TextBlock )
         }
     }
 
-    auto iter = a_TextBlock.Text.begin();
+    Vec2 internalSize = a_TextBlock.Size;
+    internalSize.X -= 2 * a_TextBlock.BorderWidth;
+    internalSize.Y -= 2 * a_TextBlock.BorderWidth;
 
-    while ( iter != a_TextBlock.Text.end() )
+    for ( int i = a_TextBlock.Pos.X + a_TextBlock.BorderWidth; i <= a_TextBlock.GetMaxX() - a_TextBlock.BorderWidth; ++i )
     {
+        for ( int j = a_TextBlock.Pos.Y + a_TextBlock.BorderWidth; j <= a_TextBlock.GetMaxY() - a_TextBlock.BorderWidth; ++j )
+        {
+            m_Buffer[ static_cast< size_t >( m_Width ) * j + i ] = a_TextBlock.Centre;
+        }
+    }
 
+    list< string_view > views;
+    size_t indexLeft = 0;
+    size_t indexRight = 0;
+
+    while ( indexRight < a_TextBlock.Text.size() )
+    {
+        if ( a_TextBlock.Text[ indexRight++ ] == '\n' )
+        {
+            views.emplace_back( a_TextBlock.Text.c_str() + indexLeft, indexRight - indexLeft - 1 );
+            indexLeft = indexRight;
+
+            if ( views.size() >= internalSize.Y )
+            {
+                break;
+            }
+        }
+        else if ( a_TextBlock.WrapMode == WrapMode::Truncate && indexRight - indexLeft >= internalSize.X )
+        {
+            views.emplace_back( a_TextBlock.Text.c_str() + indexLeft, indexRight - indexLeft );
+            indexLeft = indexRight;
+
+            if ( views.size() >= internalSize.Y )
+            {
+                break;
+            }
+        }
+        else if ( indexRight >= a_TextBlock.Text.size() )
+        {
+            views.emplace_back( a_TextBlock.Text.c_str() + indexLeft, indexRight - indexLeft );
+            break;
+        }
+    }
+
+    while( views.size() > 0 )
+    {
+        string_view& view = views.front();
+        views.pop_front();
+        int offset = 0;
+
+        switch ( a_TextBlock.TextAllignment )
+        {
+        case TextAllignment::CentreLeft:
+        {
+            offset = floorf( ( internalSize.X - view.size() ) * 0.5f );
+        }
+        break;
+        case TextAllignment::CentreRight:
+        {
+            offset = ceilf( ( internalSize.X - view.size() ) * 0.5f );
+        }
+        break;
+        case TextAllignment::Right:
+        {
+            offset = internalSize.X - view.size();
+        }
+        break;
+        }
+
+        SetLine( view.data(), view.size(),
+                 { a_TextBlock.BorderWidth + a_TextBlock.Pos.X + offset,
+                   a_TextBlock.BorderWidth + a_TextBlock.Pos.Y + i } );
     }
 }
 

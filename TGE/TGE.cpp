@@ -8,16 +8,20 @@ int main()
     CharInfo charInfo;
     charInfo.Ascii() = 'X';
     charInfo.SetBackgroundColour( ConsoleColour::GREEN );
-    charInfo.SetForegroundColour( ConsoleColour::YELLOW );
+    charInfo.SetForegroundColour( ConsoleColour::RED );
 
     TextBlock textBlock;
-    textBlock.BorderWidth = 2;
+    textBlock.BorderWidth = 0;
     textBlock.Border = charInfo;
-    charInfo.SetBackgroundColour( ConsoleColour::RED );
+    charInfo.Ascii() = ' ';
+    charInfo.SetBackgroundColour( ConsoleColour::WHITE );
+    charInfo.SetForegroundColour( ConsoleColour::BLACK );
     textBlock.Centre = charInfo;
+    textBlock.Text = "Hi, my name is Len and it is nice to meet you!!";
+    textBlock.TextAllignment = TextAllignment::Right;
 
     textBlock.Pos = { 1, 1 };
-    textBlock.Size = { 9, 9 };
+    textBlock.Size = { 30, 10 };
 
     buffer.DrawTextBlock( textBlock );
 
