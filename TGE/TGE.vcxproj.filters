@@ -34,7 +34,22 @@
     <ClInclude Include="TextFormatter.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="SceneHeirarchy.hpp">
+    <ClInclude Include="Scene.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Name.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="crc32.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Registry.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -146,7 +146,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Buffer.hpp" />
-    <ClInclude Include="SceneHeirarchy.hpp" />
+    <ClInclude Include="Component.hpp" />
+    <ClInclude Include="crc32.hpp" />
+    <ClInclude Include="Name.hpp" />
+    <ClInclude Include="Object.hpp" />
+    <ClInclude Include="Registry.hpp" />
+    <ClInclude Include="Scene.hpp" />
     <ClInclude Include="TextBlock.hpp" />
     <ClInclude Include="TextFormatter.hpp" />
     <ClInclude Include="Utilities.hpp" />
