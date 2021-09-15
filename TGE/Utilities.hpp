@@ -43,16 +43,27 @@ struct CharInfo : private CHAR_INFO
 	inline operator CHAR_INFO& ( ) { return *reinterpret_cast< CHAR_INFO* >( this ); }
 };
 
-struct Vec2
+struct Vector2Int
 {
 	int X, Y;
 };
 
+struct Vector2
+{
+	float X, Y;
+};
+
+typedef Vector2Int Offset;
+typedef Vector2Int Size;
+typedef Vector2 Pivot;
+typedef Vector2 Anchor;
+
 struct Rect
 {
-	Vec2 Pos, Size;
+	Offset Offset;
+	Size Size;
 
 	int GetArea() const { return Size.X * Size.Y; }
-	int GetMaxX() const { return Pos.X + Size.X - 1; }
-	int GetMaxY() const { return Pos.Y + Size.Y - 1; }
+	int GetMaxX() const { return Offset.X + Size.X - 1; }
+	int GetMaxY() const { return Offset.Y + Size.Y - 1; }
 };

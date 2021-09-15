@@ -141,11 +141,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Buffer.cpp" />
+    <ClCompile Include="RectTransform.hpp" />
     <ClCompile Include="TGE.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Buffer.hpp" />
+    <ClInclude Include="SceneHeirarchy.hpp" />
     <ClInclude Include="TextBlock.hpp" />
+    <ClInclude Include="TextFormatter.hpp" />
     <ClInclude Include="Utilities.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

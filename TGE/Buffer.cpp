@@ -2,6 +2,7 @@
 #include <list>
 
 #include "Buffer.hpp"
+#include "TextFormatter.hpp"
 
 using namespace std;
 
@@ -57,12 +58,12 @@ void Buffer::SetBuffer( CharInfo a_CharInfo )
     memset( m_Buffer, 0, static_cast< size_t >( 4 ) * m_Width * m_Height );
 }
 
-void Buffer::SetCharacter( CharInfo a_CharInfo, Vec2 a_Position )
+void Buffer::SetCharacter( CharInfo a_CharInfo, Vector2Int a_Position )
 {
     m_Buffer[ m_Width * a_Position.Y + a_Position.X ] = a_CharInfo;
 }
 
-void Buffer::SetLine( const char* a_String, Vec2 a_Position )
+void Buffer::SetLine( const char* a_String, Vector2Int a_Position )
 {
     CharInfo* start = m_Buffer + static_cast< size_t >( m_Width ) * a_Position.Y + a_Position.X;
     CharInfo* end   = m_Buffer + min( strlen( a_String ), static_cast< size_t >( m_Width ) * m_Height );
@@ -75,7 +76,7 @@ void Buffer::SetLine( const char* a_String, Vec2 a_Position )
     }
 }
 
-void Buffer::SetLine( const char* a_String, Vec2 a_Position, CharInfo a_CharInfo )
+void Buffer::SetLine( const char* a_String, Vector2Int a_Position, CharInfo a_CharInfo )
 {
     CharInfo* start = m_Buffer + static_cast< size_t >( m_Width ) * a_Position.Y + a_Position.X;
     CharInfo* end = m_Buffer + min( strlen( a_String ), static_cast< size_t >( m_Width ) * m_Height );
@@ -89,7 +90,7 @@ void Buffer::SetLine( const char* a_String, Vec2 a_Position, CharInfo a_CharInfo
     }
 }
 
-void Buffer::SetLine( const char* a_String, size_t a_Count, Vec2 a_Position )
+void Buffer::SetLine( const char* a_String, size_t a_Count, Vector2Int a_Position )
 {
     CharInfo* start = m_Buffer + static_cast< size_t >( m_Width ) * a_Position.Y + a_Position.X;
     CharInfo* end = m_Buffer + min( static_cast< size_t >( m_Width ) * a_Position.Y + a_Position.X + a_Count, 
@@ -103,8 +104,20 @@ void Buffer::SetLine( const char* a_String, size_t a_Count, Vec2 a_Position )
     }
 }
 
-void Buffer::SetLine( const char* a_String, size_t a_Count, Vec2 a_Position, CharInfo a_CharInfo )
+void Buffer::SetLine( const char* a_String, size_t a_Count, Vector2Int a_Position, CharInfo a_CharInfo )
 {
+    if ( a_Position.Y < 0 || a_Position.Y >= m_Height || a_Position.X >= m_Width )
+    {
+        return;
+    }
+
+    if ( a_Position.X < 0 )
+    {
+        a_String -= a_Position.X;
+        a_Count += a_Position.X;
+        a_Position.X = 0;
+    }
+
     CharInfo* start = m_Buffer + static_cast< size_t >( m_Width ) * a_Position.Y + a_Position.X;
     CharInfo* end = m_Buffer + min( static_cast< size_t >( m_Width ) * a_Position.Y + a_Position.X + a_Count,
                                     static_cast< size_t >( m_Width ) * m_Height );
@@ -122,7 +135,7 @@ void Buffer::DrawTextBlock( const TextBlock& a_TextBlock )
 {
     if ( a_TextBlock.BorderWidth > 0 )
     {
-        CharInfo* top = m_Buffer + static_cast< size_t >( m_Width ) * a_TextBlock.Pos.Y + a_TextBlock.Pos.X;
+        CharInfo* top = m_Buffer + static_cast< size_t >( m_Width ) * a_TextBlock.Offset.Y + a_TextBlock.Offset.X;
         CharInfo* bottom = top + m_Width * ( static_cast< size_t >( a_TextBlock.Size.Y ) - a_TextBlock.BorderWidth );
 
         for ( int i = 0; i < a_TextBlock.BorderWidth; ++i )
@@ -152,79 +165,69 @@ void Buffer::DrawTextBlock( const TextBlock& a_TextBlock )
         }
     }
 
-    Vec2 internalSize = a_TextBlock.Size;
+    Vector2Int internalSize = a_TextBlock.Size;
     internalSize.X -= 2 * a_TextBlock.BorderWidth;
     internalSize.Y -= 2 * a_TextBlock.BorderWidth;
 
-    for ( int i = a_TextBlock.Pos.X + a_TextBlock.BorderWidth; i <= a_TextBlock.GetMaxX() - a_TextBlock.BorderWidth; ++i )
+    for ( int i = a_TextBlock.Offset.X + a_TextBlock.BorderWidth; i <= a_TextBlock.GetMaxX() - a_TextBlock.BorderWidth; ++i )
     {
-        for ( int j = a_TextBlock.Pos.Y + a_TextBlock.BorderWidth; j <= a_TextBlock.GetMaxY() - a_TextBlock.BorderWidth; ++j )
+        for ( int j = a_TextBlock.Offset.Y + a_TextBlock.BorderWidth; j <= a_TextBlock.GetMaxY() - a_TextBlock.BorderWidth; ++j )
         {
             m_Buffer[ static_cast< size_t >( m_Width ) * j + i ] = a_TextBlock.Centre;
         }
     }
 
-    list< string_view > views;
-    size_t indexLeft = 0;
-    size_t indexRight = 0;
+    StringBundle bundle( a_TextBlock.Text );
+    a_TextBlock.Formatting.Format( internalSize, bundle );
 
-    while ( indexRight < a_TextBlock.Text.size() )
+    int verticalOffset = 0;
+
+    switch ( a_TextBlock.Formatting.VerticalTextAllignment )
     {
-        if ( a_TextBlock.Text[ indexRight++ ] == '\n' )
-        {
-            views.emplace_back( a_TextBlock.Text.c_str() + indexLeft, indexRight - indexLeft - 1 );
-            indexLeft = indexRight;
-
-            if ( views.size() >= internalSize.Y )
-            {
-                break;
-            }
-        }
-        else if ( a_TextBlock.WrapMode == WrapMode::Truncate && indexRight - indexLeft >= internalSize.X )
-        {
-            views.emplace_back( a_TextBlock.Text.c_str() + indexLeft, indexRight - indexLeft );
-            indexLeft = indexRight;
-
-            if ( views.size() >= internalSize.Y )
-            {
-                break;
-            }
-        }
-        else if ( indexRight >= a_TextBlock.Text.size() )
-        {
-            views.emplace_back( a_TextBlock.Text.c_str() + indexLeft, indexRight - indexLeft );
-            break;
-        }
+    case VerticalTextAllignment::CentreTop:
+    {
+        verticalOffset = floorf( static_cast< int >( internalSize.Y - bundle.size() ) * 0.5f );
+    }
+        break;
+    case VerticalTextAllignment::CentreBottom:
+    {
+        verticalOffset = ceilf( static_cast< int >( internalSize.Y - bundle.size() ) * 0.5f );
+    }
+        break;
+    case VerticalTextAllignment::Bottom:
+    {
+        verticalOffset = internalSize.Y - bundle.size();
+    }
+        break;
     }
 
-    while( views.size() > 0 )
+    auto iter = bundle.begin();
+    Vector2Int origin = { a_TextBlock.Offset.X + a_TextBlock.BorderWidth, a_TextBlock.Offset.Y + a_TextBlock.BorderWidth };
+
+    for ( int i = 0; i < bundle.size(); ++i, ++iter )
     {
-        string_view& view = views.front();
-        views.pop_front();
-        int offset = 0;
+        int horizontalOffset = 0;
 
-        switch ( a_TextBlock.TextAllignment )
+        switch ( a_TextBlock.Formatting.HorizontalTextAllignment )
         {
-        case TextAllignment::CentreLeft:
+        case HorizontalTextAllignment::CentreLeft:
         {
-            offset = floorf( ( internalSize.X - view.size() ) * 0.5f );
+            horizontalOffset = floorf( static_cast< int >( internalSize.X - iter->length() ) * 0.5f );
         }
-        break;
-        case TextAllignment::CentreRight:
+            break;
+        case HorizontalTextAllignment::CentreRight:
         {
-            offset = ceilf( ( internalSize.X - view.size() ) * 0.5f );
+            horizontalOffset = ceilf( static_cast< int >( internalSize.X - iter->length() ) * 0.5f );
         }
-        break;
-        case TextAllignment::Right:
+            break;
+        case HorizontalTextAllignment::Right:
         {
-            offset = internalSize.X - view.size();
+            horizontalOffset = internalSize.X - iter->length();
         }
-        break;
+            break;
         }
 
-        SetLine( view.data(), view.size(),
-                 { a_TextBlock.BorderWidth + a_TextBlock.Pos.X + offset,
-                   a_TextBlock.BorderWidth + a_TextBlock.Pos.Y + i } );
+        SetLine( iter->data(), iter->length(), { origin.X + horizontalOffset, origin.Y + verticalOffset + i }, a_TextBlock.Centre );
     }
 }
 
@@ -235,6 +238,6 @@ void Buffer::UpdateBuffer()
 
 void Buffer::UpdateBuffer( const Rect& a_Rect )
 {
-    SMALL_RECT rect = { a_Rect.Pos.X, a_Rect.Pos.Y, a_Rect.GetMaxX(), a_Rect.GetMaxY() };
+    SMALL_RECT rect = { a_Rect.Offset.X, a_Rect.Offset.Y, a_Rect.GetMaxX(), a_Rect.GetMaxY() };
     WriteConsoleOutput( m_Handle, reinterpret_cast< CHAR_INFO* >( m_Buffer ), { ( short )m_Width, ( short )m_Height }, { 0, 0 }, &rect );
 }

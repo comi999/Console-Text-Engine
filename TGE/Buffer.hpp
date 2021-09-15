@@ -15,11 +15,11 @@ public:
 	void SetBuffer( CharInfo a_CharInfo );
 	void UpdateBuffer();
 	void UpdateBuffer( const Rect& a_Rect );
-	void SetCharacter( CharInfo a_CharInfo, Vec2 a_Position );
-	void SetLine( const char* a_String, Vec2 a_Position );
-	void SetLine( const char* a_String, Vec2 a_Position, CharInfo a_CharInfo );
-	void SetLine( const char* a_String, size_t a_Count, Vec2 a_Postion );
-	void SetLine( const char* a_String, size_t a_Count, Vec2 a_Postion, CharInfo a_CharInfo );
+	void SetCharacter( CharInfo a_CharInfo, Vector2Int a_Position );
+	void SetLine( const char* a_String, Vector2Int a_Position );
+	void SetLine( const char* a_String, Vector2Int a_Position, CharInfo a_CharInfo );
+	void SetLine( const char* a_String, size_t a_Count, Vector2Int a_Postion );
+	void SetLine( const char* a_String, size_t a_Count, Vector2Int a_Postion, CharInfo a_CharInfo );
 	void DrawTextBlock( const TextBlock& a_TextBlock );
 
 private:

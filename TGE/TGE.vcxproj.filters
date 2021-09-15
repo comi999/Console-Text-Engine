@@ -17,6 +17,9 @@
     <ClCompile Include="Buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RectTransform.hpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Buffer.hpp">
@@ -26,6 +29,12 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="TextBlock.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextFormatter.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneHeirarchy.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
