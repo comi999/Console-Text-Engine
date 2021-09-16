@@ -3,9 +3,42 @@
 
 #include <thread>
 
+struct IBase { virtual ~IBase() {  } }; 
+struct BaseA : IBase { virtual ~BaseA() {  } }; 
+struct BaseB : IBase { virtual ~BaseB() {  } }; 
+struct DerivedA : BaseA { virtual ~DerivedA() { } }; 
+struct DerivedB : DerivedA { virtual ~DerivedB() {  } }; 
+struct _ { virtual ~_() { } } m_;
+
+template < typename Base >
+bool CanCast( IBase* a_Ptr )
+{
+    Base* base = dynamic_cast< Base* >( a_Ptr );
+    return base;
+}
+
+bool( *CanCast_T )( IBase* ) = CanCast< DerivedA >;
+
+template < typename DerivedType >
+bool IsBaseOf()
+{
+    DerivedType* derived = reinterpret_cast< DerivedType* >( &m_ );
+    return CanCast_T( derived );
+}
+
 int main()
 {
-    Buffer buffer( 50, 50, 8, 12);
+    BaseA* baseA1 = new BaseA();
+    BaseB* baseB1 = new BaseB();
+    DerivedA* derivedA1 = new DerivedA();
+    DerivedB* derivedB1 = new DerivedB();
+
+    bool test0 = IsBaseOf< BaseA >();
+    bool test1 = IsBaseOf< BaseB >();
+    bool test2 = IsBaseOf< DerivedA >();
+    bool test3 = IsBaseOf< DerivedB >();
+
+    Buffer buffer( 50, 50, 8, 12 );
 
     CharInfo charInfo;
     charInfo.Ascii() = 'X';
