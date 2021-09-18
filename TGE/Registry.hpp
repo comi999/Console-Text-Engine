@@ -21,7 +21,7 @@ private:
 		typedef bool( *IsBaseOf_T )( Base* );
 
 		INode( IsBaseOf_T a_IsBaseOf, size_t a_HashCode, INode* a_Parent )
-			: m_IsBaseOf( a_IsBaseOf ), m_HashCode( a_HashCode ), m_ValueCount( 0 ), m_Parent( a_Parent )
+			: m_IsBaseOf( a_IsBaseOf ), m_Parent( a_Parent ), m_HashCode( a_HashCode ), m_ValueCount( 0 ), m_ChildCount( 0 )
 		{ }
 
 		template < typename T >
@@ -31,10 +31,11 @@ private:
 		}
 
 		IsBaseOf_T m_IsBaseOf;
-		size_t m_HashCode;
-		size_t m_ValueCount;
 		INode* m_Parent;
 		vector< INode* > m_Children;
+		size_t m_HashCode;
+		size_t m_ValueCount;
+		size_t m_ChildCount;
 	};
 
 	template < typename Type >
@@ -69,7 +70,7 @@ private:
 public:
 
 	Registry()
-		: m_Root( nullptr ), m_Count( 0 )
+		: m_Root( nullptr )
 	{
 		m_Nodes.emplace( make_pair( typeid( Base ).hash_code(), &m_Root ) );
 	}
@@ -119,6 +120,7 @@ public:
 			} while ( !nodes.empty() );
 
 			exact = static_cast< Node< T >* >( m_Nodes.emplace( make_pair( typeid( T ).hash_code(), static_cast< INode* >( new Node< T >( closest ) ) ) ).first->second );
+			++closest->m_ChildCount;
 			list< INode* > peers;
 			list< INode* > children;
 
@@ -143,6 +145,8 @@ public:
 				for ( auto& child : children )
 				{
 					exact->m_Children.push_back( child );
+					exact->m_ValueCount += child->m_ValueCount;
+					exact->m_ChildCount += child->m_ChildCount + 1;
 				}
 
 				closest->m_Children = vector< INode* >();
@@ -169,7 +173,6 @@ public:
 		advance( where, a_Index );
 		exact->m_Values.insert( where, *newObject );
 		++exact->m_ValueCount;
-		++m_Count;
 		operator delete( newObject );
 		return &exact->m_Values.at( a_Index );
 	}
@@ -211,6 +214,7 @@ public:
 			} while ( !nodes.empty() );
 
 			exact = static_cast< Node< T >* >( m_Nodes.emplace( make_pair( typeid( T ).hash_code(), static_cast< INode* >( new Node< T >( closest ) ) ) ).first->second );
+			++closest->m_ChildCount;
 			list< INode* > peers;
 			list< INode* > children;
 			
@@ -235,6 +239,8 @@ public:
 				for ( auto& child : children )
 				{
 					exact->m_Children.push_back( child );
+					exact->m_ValueCount += child->m_ValueCount;
+					exact->m_ChildCount += child->m_ChildCount + 1;
 				}
 
 				closest->m_Children = vector< INode* >();
@@ -258,7 +264,6 @@ public:
 
 		auto where = exact->m_Values.insert( exact->m_Values.begin(), *newObject );
 		++exact->m_ValueCount;
-		++m_Count;
 		operator delete( newObject );
 		return &*where;
 	}
@@ -300,6 +305,7 @@ public:
 			} while ( !nodes.empty() );
 
 			exact = static_cast< Node< T >* >( m_Nodes.emplace( make_pair( typeid( T ).hash_code(), static_cast< INode* >( new Node< T >( closest ) ) ) ).first->second );
+			++closest->m_ChildCount;
 			list< INode* > peers;
 			list< INode* > children;
 			
@@ -324,6 +330,8 @@ public:
 				for ( auto& child : children )
 				{
 					exact->m_Children.push_back( child );
+					exact->m_ValueCount += child->m_ValueCount;
+					exact->m_ChildCount += child->m_ChildCount + 1;
 				}
 
 				closest->m_Children = vector< INode* >();
@@ -347,7 +355,6 @@ public:
 
 		exact->m_Values.push_back( *newObject );
 		++exact->m_ValueCount;
-		++m_Count;
 		operator delete( newObject );
 		return &exact->m_Values.back();
 	}
@@ -388,6 +395,7 @@ public:
 			} while ( !nodes.empty() );
 
 			exact = static_cast< Node< T >* >( m_Nodes.emplace( make_pair( typeid( T ).hash_code(), static_cast< INode* >( new Node< T >( closest ) ) ) ).first->second );
+			++closest->m_ChildCount;
 			list< INode* > peers;
 			list< INode* > children;
 
@@ -412,6 +420,8 @@ public:
 				for ( auto& child : children )
 				{
 					exact->m_Children.push_back( child );
+					exact->m_ValueCount += child->m_ValueCount;
+					exact->m_ChildCount += child->m_ChildCount + 1;
 				}
 
 				closest->m_Children = vector< INode* >();
@@ -435,7 +445,6 @@ public:
 
 		exact->m_Values.insert( exact->m_Values.begin(), a_Object );
 		++exact->m_ValueCount;
-		++m_Count;
 		return &exact->m_Values.front();
 	}
 
@@ -475,6 +484,7 @@ public:
 			} while ( !nodes.empty() );
 
 			exact = static_cast< Node< T >* >( m_Nodes.emplace( make_pair( typeid( T ).hash_code(), static_cast< INode* >( new Node< T >( closest ) ) ) ).first->second );
+			++closest->m_ChildCount;
 			list< INode* > peers;
 			list< INode* > children;
 
@@ -498,7 +508,9 @@ public:
 
 				for ( auto& child : children )
 				{
-					exact->m_Children.push_back( child );
+					exact->m_Children.push_back( child ); 
+					exact->m_ValueCount += child->m_ValueCount;
+					exact->m_ChildCount += child->m_ChildCount + 1;
 				}
 
 				closest->m_Children = vector< INode* >();
@@ -522,7 +534,6 @@ public:
 
 		exact->m_Values.insert( exact->m_Values.end(), a_Object );
 		++exact->m_ValueCount;
-		++m_Count;
 		return &exact->m_Values.back();
 	}
 
@@ -576,6 +587,7 @@ public:
 			} while ( !nodes.empty() );
 
 			exact = static_cast< Node< T >* >( m_Nodes.emplace( make_pair( typeid( T ).hash_code(), static_cast< INode* >( new Node< T >( closest ) ) ) ).first->second );
+			++closest->m_ChildCount;
 			list< INode* > peers;
 			list< INode* > children;
 
@@ -600,6 +612,8 @@ public:
 				for ( auto& child : children )
 				{
 					exact->m_Children.push_back( child );
+					exact->m_ValueCount += child->m_ValueCount;
+					exact->m_ChildCount += child->m_ChildCount + 1;
 				}
 
 				closest->m_Children = vector< INode* >();
@@ -626,7 +640,6 @@ public:
 		advance( where, a_Index );
 		exact->m_Values.insert( where, a_Object );
 		++exact->m_ValueCount;
-		++m_Count;
 		return &exact->m_Values.at( a_Index );
 	}
 
@@ -834,18 +847,27 @@ public:
 
 	bool Clear()
 	{
-		if ( !m_Count )
+		if ( !m_Root.m_ValueCount )
 		{
 			return false;
 		}
 
+		size_t baseHashCode = typeid( Base ).hash_code();
+
 		for ( auto& node : m_Nodes )
 		{
-			delete node->second;
+			if ( node.first != baseHashCode )
+			{
+				delete node.second;
+			}
 		}
 
 		m_Nodes.clear();
-		m_Count = 0;
+		m_Nodes.emplace( make_pair( baseHashCode, ( INode* )&m_Root ) );
+		m_Root.m_Values.clear();
+		m_Root.m_Children.clear();
+		m_Root.m_ValueCount = 0;
+		m_Root.m_ChildCount = 0;
 		return true;
 	}
 
@@ -860,17 +882,107 @@ public:
 	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, bool >::
 	type ClearAllOfExactType()
 	{
+		// need to do something different if base
 
+		auto iter = m_Nodes.find( typeid( T ).hash_code() );
+
+		if ( iter != m_Nodes.end() )
+		{
+			INode* parent = iter->second->m_Parent;
+			
+			if ( iter->second->m_Children.size() )
+			{
+				parent->m_Children.erase( find( parent->m_Children.begin(), parent->m_Children.end(), iter->second ) );
+
+				vector< INode* > children = iter->second->m_Children;
+				parent->m_Children._Insert_range( children.begin(), children.end(), forward_iterator_tag::input_iterator_tag );
+			}
+
+			while ( parent )
+			{
+				parent->m_ValueCount -= iter->second->m_Values.size();
+				--parent->m_ChildCount;
+				parent = parent->m_Parent;
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 	bool Empty() const
 	{
-		return !m_Count;
+		return !m_Root->m_ValueCount;
+	}
+
+	size_t TypeCount() const
+	{
+		return m_Nodes.size();
+	}
+
+	template < typename T >
+	size_t TypeCount() const
+	{
+		auto iter = m_Nodes.find( typeid( T ).hash_code() );
+
+		if ( iter != m_Nodes.end() )
+		{
+			return iter->second->m_ChildCount + 1;
+		}
+		else
+		{
+			T newObject = T();
+			queue< INode* > nodes;
+			nodes.push( ( INode* )&m_Root );
+			list< INode* > children;
+			size_t typeCount = 0;
+
+			do
+			{
+				INode* node = nodes.front();
+				nodes.pop();
+
+				for ( auto& child : node->m_Children )
+				{
+					nodes.push( child );
+
+					Base* value = &child->AsNode< Base >()->m_Values.front();
+					if ( dynamic_cast< T* >( value ) )
+					{
+						children.push_back( child );
+						typeCount += child->m_ChildCount + 1;
+					}
+				}
+
+				if ( typeCount > 0 )
+				{
+					break;
+				}
+
+			} while ( !nodes.empty() );
+
+			return typeCount;
+		}
+	}
+
+	template < typename T >
+	typename enable_if< is_base_of_v< Base, T >&& is_default_constructible_v< T >, bool >::
+	type HasType() const
+	{
+
+	}
+
+	template < typename T >
+	typename enable_if< is_base_of_v< Base, T >&& is_default_constructible_v< T >, bool >::
+	type HasExactType() const
+	{
+
 	}
 
 	size_t Count() const
 	{
-		return m_Count;
+		return m_Root.m_ValueCount;
 	}
 
 	template < typename T >
@@ -935,6 +1047,5 @@ private:
 
 	Node< Base > m_Root;
 	map< size_t, INode* > m_Nodes;
-	size_t m_Count;
 
 };

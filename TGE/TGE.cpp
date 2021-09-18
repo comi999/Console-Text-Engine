@@ -57,7 +57,7 @@ int main()
     DerivedE* derE4 = reg.Emplace< DerivedE >( 1, 89 );
     DerivedE* derE5 = reg.Emplace< DerivedE >( 100, 99 );
 
-    auto result = reg.CountAllOfType< DerivedA >();
+    auto result = reg.ClearAllOfExactType< DerivedA >();
 
     Buffer buffer( 50, 50, 8, 12 );
 
