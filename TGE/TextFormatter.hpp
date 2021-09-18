@@ -119,18 +119,18 @@ private:
 					{
 					case HorizontalTextAllignment::CentreLeft:
 					{
-						offset = floorf( static_cast< int >( a_RectSize.X - iter->length() ) * 0.5f );
+						offset = static_cast< int >( floorf( static_cast< int >( a_RectSize.X - iter->length() ) * 0.5f ) );
 					}
 					break;
 					case HorizontalTextAllignment::CentreRight:
 					{
 
-						offset = ceilf( static_cast< int >( a_RectSize.X - iter->length() ) * 0.5f );
+						offset = static_cast< int >( ceilf( static_cast< int >( a_RectSize.X - iter->length() ) * 0.5f ) );
 					}
 					break;
 					case HorizontalTextAllignment::Right:
 					{
-						offset = a_RectSize.X - iter->length();
+						offset = static_cast< int >( a_RectSize.X - iter->length() );
 					}
 					break;
 					}
@@ -213,17 +213,17 @@ private:
 			{
 			case VerticalTextAllignment::CentreTop:
 			{
-				offset = floorf( static_cast< int >( a_RectSize.Y - o_StringBundle.size() ) * 0.5f );
+				offset = static_cast< int >( floorf( static_cast< int >( a_RectSize.Y - o_StringBundle.size() ) * 0.5f ) );
 			}
 			break;
 			case VerticalTextAllignment::CentreBottom:
 			{
-				offset = ceilf( static_cast< int >( a_RectSize.Y - o_StringBundle.size() ) * 0.5f );
+				offset = static_cast< int >( ceilf( static_cast< int >( a_RectSize.Y - o_StringBundle.size() ) * 0.5f ) );
 			}
 			break;
 			case VerticalTextAllignment::Bottom:
 			{
-				offset = a_RectSize.Y - o_StringBundle.size();
+				offset = static_cast< int >( a_RectSize.Y - o_StringBundle.size() );
 			}
 			break;
 			}

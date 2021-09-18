@@ -1,42 +1,63 @@
 #include <iostream>
-#include "Buffer.hpp"
-
 #include <thread>
 
-struct IBase { virtual ~IBase() {  } }; 
-struct BaseA : IBase { virtual ~BaseA() {  } }; 
-struct BaseB : IBase { virtual ~BaseB() {  } }; 
-struct DerivedA : BaseA { virtual ~DerivedA() { } }; 
-struct DerivedB : DerivedA { virtual ~DerivedB() {  } }; 
-struct _ { virtual ~_() { } } m_;
+#include "Buffer.hpp"
+#include "Registry.hpp"
+#include "Component.hpp"
 
-template < typename Base >
-bool CanCast( IBase* a_Ptr )
+struct Base
 {
-    Base* base = dynamic_cast< Base* >( a_Ptr );
-    return base;
-}
+    int num;
 
-bool( *CanCast_T )( IBase* ) = CanCast< DerivedA >;
+    Base () { num = 1; }
+    virtual ~Base() { }
+};
 
-template < typename DerivedType >
-bool IsBaseOf()
+struct DerivedA : Base
 {
-    DerivedType* derived = reinterpret_cast< DerivedType* >( &m_ );
-    return CanCast_T( derived );
-}
+    DerivedA () { num = 2; }
+    virtual ~DerivedA() { }
+};
+
+struct DerivedB : DerivedA
+{
+    DerivedB () { num = 3; }
+    virtual ~DerivedB() { }
+};
+
+struct DerivedC : DerivedA
+{
+    DerivedC () { num = 4; }
+};
+
+struct DerivedD : DerivedB
+{
+    DerivedD () { num = 5; }
+};
+
+struct DerivedE : DerivedB
+{
+    DerivedE () { }
+    DerivedE ( int a ) { num = a; }
+};
+
 
 int main()
 {
-    BaseA* baseA1 = new BaseA();
-    BaseB* baseB1 = new BaseB();
-    DerivedA* derivedA1 = new DerivedA();
-    DerivedB* derivedB1 = new DerivedB();
+    Registry< Base > reg;
 
-    bool test0 = IsBaseOf< BaseA >();
-    bool test1 = IsBaseOf< BaseB >();
-    bool test2 = IsBaseOf< DerivedA >();
-    bool test3 = IsBaseOf< DerivedB >();
+    Base* bas = reg.EmplaceBack< Base >();
+
+    DerivedC* derC = reg.EmplaceBack< DerivedC >();
+    DerivedD* derD = reg.EmplaceBack< DerivedD >();
+    DerivedB* derB = reg.EmplaceBack< DerivedB >();
+    DerivedE* derE = reg.EmplaceBack< DerivedE >( 25 );
+    DerivedE* derE2 = reg.EmplaceFront< DerivedE >( 43 );
+    DerivedE* derE3 = reg.Emplace< DerivedE >( 2, 65 );
+    DerivedE* derE4 = reg.Emplace< DerivedE >( 1, 89 );
+    DerivedE* derE5 = reg.Emplace< DerivedE >( 100, 99 );
+
+    auto result = reg.CountAllOfType< DerivedA >();
 
     Buffer buffer( 50, 50, 8, 12 );
 
