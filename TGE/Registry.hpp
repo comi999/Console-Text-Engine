@@ -107,7 +107,7 @@ public:
 	}
 
 	template < typename T, typename... Args >
-	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, T* >::
+	typename enable_if< is_base_of_v< Base, T >, T* >::
 	type Emplace( size_t a_Index, Args... a_Args )
 	{
 		Node< T >* exact = nullptr;
@@ -206,7 +206,7 @@ public:
 	}
 
 	template < typename T, typename... Args >
-	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, T* >::
+	typename enable_if< is_base_of_v< Base, T >, T* >::
 	type EmplaceFront( Args... a_Args )
 	{
 		Node< T >* exact = nullptr;
@@ -302,7 +302,7 @@ public:
 	}
 
 	template < typename T, typename... Args >
-	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, T* >::
+	typename enable_if< is_base_of_v< Base, T >, T* >::
 	type EmplaceBack( const Args&... a_Args )
 	{
 		Node< T >* exact = nullptr;
@@ -398,7 +398,7 @@ public:
 	}
 
 	template < typename T >
-	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, T* >::
+	typename enable_if< is_base_of_v< Base, T >, T* >::
 	type PushFront( const T& a_Object )
 	{
 		Node< T >* exact = nullptr;
@@ -492,7 +492,7 @@ public:
 	}
 
 	template < typename T >
-	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, T* >::
+	typename enable_if< is_base_of_v< Base, T >, T* >::
 	type PushBack( const T& a_Object )
 	{
 		Node< T >* exact = nullptr;
@@ -586,7 +586,7 @@ public:
 	}
 
 	template < typename T >
-	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, bool >::
+	typename enable_if< is_base_of_v< Base, T >, bool >::
 	type PopFront()
 	{
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
@@ -641,7 +641,7 @@ public:
 	}
 	
 	template < typename T >
-	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, bool >::
+	typename enable_if< is_base_of_v< Base, T >, bool >::
 	type PopBack()
 	{
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
@@ -696,7 +696,7 @@ public:
 	}
 
 	template < typename T >
-	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, T* >::
+	typename enable_if< is_base_of_v< Base, T >, T* >::
 	type Insert( const T& a_Object, size_t a_Index )
 	{
 		Node< T >* exact = nullptr;
@@ -793,7 +793,7 @@ public:
 	}
 
 	template < typename T >
-	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, T* >::
+	typename enable_if< is_base_of_v< Base, T >, T* >::
 	type Front() const
 	{
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
@@ -806,7 +806,7 @@ public:
 	}
 
 	template < typename T >
-	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, T* >::
+	typename enable_if< is_base_of_v< Base, T >, T* >::
 	type Back() const
 	{
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
@@ -819,7 +819,7 @@ public:
 	}
 
 	template < typename T >
-	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, T* >::
+	typename enable_if< is_base_of_v< Base, T >, T* >::
 	type At( size_t a_Index ) const
 	{
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
@@ -841,7 +841,7 @@ public:
 	}
 
 	template < typename T >
-	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, T* >::
+	typename enable_if< is_base_of_v< Base, T >, T* >::
 	type FindOfType() const
 	{
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
@@ -851,7 +851,6 @@ public:
 			return &iter->second->AsNode< T >()->m_Values.front();
 		}
 		
-		T newObject = T();
 		queue< INode* > nodes;
 		nodes.push( ( INode* )&m_Root );
 		list< INode* > children;
@@ -889,7 +888,7 @@ public:
 	}
 
 	template < typename T >
-	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, vector< T* > >::
+	typename enable_if< is_base_of_v< Base, T >, vector< T* > >::
 	type FindAllOfType() const
 	{
 		queue< INode* > nodes;
@@ -903,7 +902,6 @@ public:
 		}
 		else
 		{
-			T newObject = T();
 			nodes.push( ( INode* )&m_Root );
 			list< INode* > children;
 
@@ -967,7 +965,7 @@ public:
 	}
 
 	template < typename T >
-	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, vector< T* > >::
+	typename enable_if< is_base_of_v< Base, T >, vector< T* > >::
 	type FindAllOfExactType() const
 	{
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
@@ -1007,7 +1005,7 @@ public:
 	}
 
 	template < typename T >
-	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, bool >::
+	typename enable_if< is_base_of_v< Base, T >, bool >::
 	type ClearType()
 	{
 		queue< INode* > nodes;
@@ -1023,7 +1021,6 @@ public:
 		}
 		else
 		{
-			T newObject = T();
 			nodes.push( ( INode* )&m_Root );
 			list< INode* > children;
 
@@ -1083,7 +1080,7 @@ public:
 	}
 
 	template < typename T >
-	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, bool >::
+	typename enable_if< is_base_of_v< Base, T >, bool >::
 	type ClearExactType()
 	{
 		if ( is_same_v< Base, T > )
@@ -1148,7 +1145,6 @@ public:
 		}
 		else
 		{
-			T newObject = T();
 			queue< INode* > nodes;
 			nodes.push( ( INode* )&m_Root );
 			list< INode* > children;
@@ -1183,14 +1179,14 @@ public:
 	}
 
 	template < typename T >
-	typename enable_if< is_base_of_v< Base, T >&& is_default_constructible_v< T >, bool >::
+	typename enable_if< is_base_of_v< Base, T >, bool >::
 	type HasType() const
 	{
 
 	}
 
 	template < typename T >
-	typename enable_if< is_base_of_v< Base, T >&& is_default_constructible_v< T >, bool >::
+	typename enable_if< is_base_of_v< Base, T >, bool >::
 	type HasExactType() const
 	{
 
@@ -1202,7 +1198,7 @@ public:
 	}
 
 	template < typename T >
-	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, size_t >::
+	typename enable_if< is_base_of_v< Base, T >, size_t >::
 	type CountType() const
 	{
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
@@ -1213,7 +1209,6 @@ public:
 		}
 		else
 		{
-			T newObject = T();
 			queue< INode* > nodes;
 			nodes.push( ( INode* )&m_Root );
 			size_t foundCount = 0;
@@ -1246,7 +1241,7 @@ public:
 	}
 
 	template < typename T >
-	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, size_t >::
+	typename enable_if< is_base_of_v< Base, T >, size_t >::
 	type CountExactType() const
 	{
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
