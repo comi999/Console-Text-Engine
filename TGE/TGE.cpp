@@ -57,7 +57,14 @@ int main()
     DerivedE* derE4 = reg.Emplace< DerivedE >( 1, 89 );
     DerivedE* derE5 = reg.Emplace< DerivedE >( 100, 99 );
 
-    auto result = reg.ClearAllOfExactType< DerivedA >();
+    reg.Debug();
+
+    auto result = reg.PopFront< Base >();
+
+    system( "cls" );
+
+    reg.Debug();
+
 
     Buffer buffer( 50, 50, 8, 12 );
 

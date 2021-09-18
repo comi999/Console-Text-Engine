@@ -4,6 +4,9 @@
 #include <queue>
 #include <typeinfo>
 
+#include <iostream>
+#include <string>
+
 using namespace std;
 
 template < typename Base >
@@ -83,6 +86,26 @@ public:
 		}
 	}
 	
+	void Debug()
+	{
+		Print( &m_Root, 5 );
+	}
+
+	void Print( INode* node, int level )
+	{
+		string indent = string( level, '-' );
+		string space = string( 5, ' ' );
+		cout << indent << '{' << endl;
+		cout << indent + space << "AllValues:   " << node->m_ValueCount << endl;
+		cout << indent + space << "AllChildren: " << node->m_ChildCount << endl;
+		cout << indent + space << "ThisValues:  " << node->AsNode< Base >()->m_Values.size() << endl;
+		for ( auto& child : node->m_Children )
+		{
+			Print( child, level + 5 );
+		}
+		cout << indent << '}' << endl;
+	}
+
 	template < typename T, typename... Args >
 	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, T* >::
 	type Emplace( size_t a_Index, Args... a_Args )
@@ -90,6 +113,7 @@ public:
 		Node< T >* exact = nullptr;
 		T* newObject = new T( a_Args... );
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
+		bool createdNewNode = false;
 
 		if ( iter != m_Nodes.end() )
 		{
@@ -120,7 +144,7 @@ public:
 			} while ( !nodes.empty() );
 
 			exact = static_cast< Node< T >* >( m_Nodes.emplace( make_pair( typeid( T ).hash_code(), static_cast< INode* >( new Node< T >( closest ) ) ) ).first->second );
-			++closest->m_ChildCount;
+			createdNewNode = true;
 			list< INode* > peers;
 			list< INode* > children;
 
@@ -164,6 +188,10 @@ public:
 		INode* parent = exact->m_Parent;
 		while ( parent )
 		{
+			if ( createdNewNode )
+			{
+				++parent->m_ChildCount;
+			}
 			++parent->m_ValueCount;
 			parent = parent->m_Parent;
 		}
@@ -184,6 +212,7 @@ public:
 		Node< T >* exact = nullptr;
 		T* newObject = new T( a_Args... );
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
+		bool createdNewNode = false;
 
 		if ( iter != m_Nodes.end() )
 		{
@@ -214,7 +243,7 @@ public:
 			} while ( !nodes.empty() );
 
 			exact = static_cast< Node< T >* >( m_Nodes.emplace( make_pair( typeid( T ).hash_code(), static_cast< INode* >( new Node< T >( closest ) ) ) ).first->second );
-			++closest->m_ChildCount;
+			createdNewNode = true;
 			list< INode* > peers;
 			list< INode* > children;
 			
@@ -258,6 +287,10 @@ public:
 		INode* parent = exact->m_Parent;
 		while ( parent )
 		{
+			if ( createdNewNode )
+			{
+				++parent->m_ChildCount;
+			}
 			++parent->m_ValueCount;
 			parent = parent->m_Parent;
 		}
@@ -275,6 +308,7 @@ public:
 		Node< T >* exact = nullptr;
 		T* newObject = new T( a_Args... );
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
+		bool createdNewNode = false;
 
 		if ( iter != m_Nodes.end() )
 		{
@@ -305,7 +339,7 @@ public:
 			} while ( !nodes.empty() );
 
 			exact = static_cast< Node< T >* >( m_Nodes.emplace( make_pair( typeid( T ).hash_code(), static_cast< INode* >( new Node< T >( closest ) ) ) ).first->second );
-			++closest->m_ChildCount;
+			createdNewNode = true;
 			list< INode* > peers;
 			list< INode* > children;
 			
@@ -349,6 +383,10 @@ public:
 		INode* parent = exact->m_Parent;
 		while ( parent )
 		{
+			if ( createdNewNode )
+			{
+				++parent->m_ChildCount;
+			}
 			++parent->m_ValueCount;
 			parent = parent->m_Parent;
 		}
@@ -365,6 +403,7 @@ public:
 	{
 		Node< T >* exact = nullptr;
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
+		bool createdNewNode = false;
 
 		if ( iter != m_Nodes.end() )
 		{
@@ -395,7 +434,7 @@ public:
 			} while ( !nodes.empty() );
 
 			exact = static_cast< Node< T >* >( m_Nodes.emplace( make_pair( typeid( T ).hash_code(), static_cast< INode* >( new Node< T >( closest ) ) ) ).first->second );
-			++closest->m_ChildCount;
+			createdNewNode = true;
 			list< INode* > peers;
 			list< INode* > children;
 
@@ -439,6 +478,10 @@ public:
 		INode* parent = exact->m_Parent;
 		while ( parent )
 		{
+			if ( createdNewNode )
+			{
+				++parent->m_ChildCount;
+			}
 			++parent->m_ValueCount;
 			parent = parent->m_Parent;
 		}
@@ -454,6 +497,7 @@ public:
 	{
 		Node< T >* exact = nullptr;
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
+		bool createdNewNode = false;
 
 		if ( iter != m_Nodes.end() )
 		{
@@ -484,7 +528,7 @@ public:
 			} while ( !nodes.empty() );
 
 			exact = static_cast< Node< T >* >( m_Nodes.emplace( make_pair( typeid( T ).hash_code(), static_cast< INode* >( new Node< T >( closest ) ) ) ).first->second );
-			++closest->m_ChildCount;
+			createdNewNode = true;
 			list< INode* > peers;
 			list< INode* > children;
 
@@ -528,6 +572,10 @@ public:
 		INode* parent = exact->m_Parent;
 		while ( parent )
 		{
+			if ( createdNewNode )
+			{
+				++parent->m_ChildCount;
+			}
 			++parent->m_ValueCount;
 			parent = parent->m_Parent;
 		}
@@ -541,14 +589,110 @@ public:
 	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, bool >::
 	type PopFront()
 	{
+		auto iter = m_Nodes.find( typeid( T ).hash_code() );
 
+		if ( iter != m_Nodes.end() )
+		{
+			Node< T >* node = iter->second->AsNode< T >();
+			if ( node->m_Values.size() == 1 && !is_same_v< Base, T > )
+			{
+				INode* parent = iter->second->m_Parent;
+
+				while ( parent )
+				{
+					parent->m_ValueCount -= iter->second->AsNode< T >()->m_Values.size();
+					--parent->m_ChildCount;
+					parent = parent->m_Parent;
+				}
+
+				parent = iter->second->m_Parent;
+
+				if ( iter->second->m_Children.size() )
+				{
+					parent->m_Children.erase( find( parent->m_Children.begin(), parent->m_Children.end(), iter->second ) );
+					vector< INode* > children = iter->second->m_Children;
+					delete iter->second;
+					parent->m_Children.reserve( parent->m_Children.size() + children.size() );
+					m_Nodes.erase( iter );
+					for ( auto& child : children )
+					{
+						parent->m_Children.push_back( child );
+					}
+				}
+			}
+			else if ( node->m_Values.size() )
+			{
+				node->m_Values.erase( node->m_Values.begin() );
+				--node->m_ValueCount;
+				INode* parent = iter->second->m_Parent;
+
+				while ( parent )
+				{
+					parent->m_ValueCount -= iter->second->AsNode< T >()->m_Values.size();
+					--parent->m_ChildCount;
+					parent = parent->m_Parent;
+				}
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 	
 	template < typename T >
 	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, bool >::
 	type PopBack()
 	{
+		auto iter = m_Nodes.find( typeid( T ).hash_code() );
 
+		if ( iter != m_Nodes.end() )
+		{
+			Node< T >* node = iter->second->AsNode< T >();
+			if ( node->m_Values.size() == 1 && !is_same_v< Base, T > )
+			{
+				INode* parent = iter->second->m_Parent;
+
+				while ( parent )
+				{
+					parent->m_ValueCount -= iter->second->AsNode< T >()->m_Values.size();
+					--parent->m_ChildCount;
+					parent = parent->m_Parent;
+				}
+
+				parent = iter->second->m_Parent;
+
+				if ( iter->second->m_Children.size() )
+				{
+					parent->m_Children.erase( find( parent->m_Children.begin(), parent->m_Children.end(), iter->second ) );
+					vector< INode* > children = iter->second->m_Children;
+					delete iter->second;
+					parent->m_Children.reserve( parent->m_Children.size() + children.size() );
+					m_Nodes.erase( iter );
+					for ( auto& child : children )
+					{
+						parent->m_Children.push_back( child );
+					}
+				}
+			}
+			else if ( node->m_Values.size() )
+			{
+				node->m_Values.pop_back();
+				--node->m_ValueCount;
+				INode* parent = iter->second->m_Parent;
+
+				while ( parent )
+				{
+					parent->m_ValueCount -= iter->second->AsNode< T >()->m_Values.size();
+					--parent->m_ChildCount;
+					parent = parent->m_Parent;
+				}
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 	template < typename T >
@@ -557,6 +701,7 @@ public:
 	{
 		Node< T >* exact = nullptr;
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
+		bool createdNewNode = false;
 
 		if ( iter != m_Nodes.end() )
 		{
@@ -587,7 +732,7 @@ public:
 			} while ( !nodes.empty() );
 
 			exact = static_cast< Node< T >* >( m_Nodes.emplace( make_pair( typeid( T ).hash_code(), static_cast< INode* >( new Node< T >( closest ) ) ) ).first->second );
-			++closest->m_ChildCount;
+			createdNewNode = true;
 			list< INode* > peers;
 			list< INode* > children;
 
@@ -631,6 +776,10 @@ public:
 		INode* parent = exact->m_Parent;
 		while ( parent )
 		{
+			if ( createdNewNode )
+			{
+				++parent->m_ChildCount;
+			}
 			++parent->m_ValueCount;
 			parent = parent->m_Parent;
 		}
@@ -831,20 +980,6 @@ public:
 		return vector< T* >();
 	}
 
-	template < typename T >
-	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, bool >::
-	type DestroyAllOfType()
-	{
-
-	}
-
-	template < typename T >
-	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, bool >::
-	type DestroyAllOfExactType()
-	{
-
-	}
-
 	bool Clear()
 	{
 		if ( !m_Root.m_ValueCount )
@@ -873,36 +1008,117 @@ public:
 
 	template < typename T >
 	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, bool >::
-	type ClearAllOfType()
+	type ClearType()
 	{
+		queue< INode* > nodes;
+		size_t foundCount = 0;
+		auto iter = m_Nodes.find( typeid( T ).hash_code() );
+		bool removedNode = false;
 
+		if ( iter != m_Nodes.end() )
+		{
+			nodes.push( iter->second );
+			foundCount += iter->second->m_ValueCount;
+			removedNode = true;
+		}
+		else
+		{
+			T newObject = T();
+			nodes.push( ( INode* )&m_Root );
+			list< INode* > children;
+
+			do
+			{
+				INode* node = nodes.front();
+				nodes.pop();
+
+				for ( auto& child : node->m_Children )
+				{
+					nodes.push( child );
+
+					Base* value = &child->AsNode< Base >()->m_Values.front();
+					if ( dynamic_cast< T* >( value ) )
+					{
+						children.push_back( child );
+						foundCount += child->m_ValueCount;
+					}
+				}
+
+				if ( children.size() )
+				{
+					break;
+				}
+
+			} while ( !nodes.empty() );
+
+			for ( auto& child : children )
+			{
+				nodes.push( child );
+			}
+		}
+
+		if ( foundCount )
+		{
+			do
+			{
+				INode* node = nodes.front();
+				nodes.pop();
+
+				for ( T* ptr : values )
+				{
+					found.push_back( ptr );
+				}
+
+				for ( auto& child : node->m_Children )
+				{
+					nodes.push( child );
+				}
+
+			} while ( !nodes.empty() );
+
+			return found;
+		}
+
+		return vector< T* >();
 	}
 
 	template < typename T >
 	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, bool >::
-	type ClearAllOfExactType()
+	type ClearExactType()
 	{
-		// need to do something different if base
+		if ( is_same_v< Base, T > )
+		{
+			m_Root.m_ValueCount -= m_Root.m_Values.size();
+			m_Root.m_Values.clear();
+			return true;
+		}
 
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
 
 		if ( iter != m_Nodes.end() )
 		{
 			INode* parent = iter->second->m_Parent;
+
+			while ( parent )
+			{
+				parent->m_ValueCount -= iter->second->AsNode< T >()->m_Values.size();
+				--parent->m_ChildCount;
+				parent = parent->m_Parent;
+			}
+
+			parent = iter->second->m_Parent;
 			
 			if ( iter->second->m_Children.size() )
 			{
 				parent->m_Children.erase( find( parent->m_Children.begin(), parent->m_Children.end(), iter->second ) );
-
 				vector< INode* > children = iter->second->m_Children;
-				parent->m_Children._Insert_range( children.begin(), children.end(), forward_iterator_tag::input_iterator_tag );
-			}
-
-			while ( parent )
-			{
-				parent->m_ValueCount -= iter->second->m_Values.size();
-				--parent->m_ChildCount;
-				parent = parent->m_Parent;
+				delete iter->second;
+				parent->m_Children.reserve( parent->m_Children.size() + children.size() );
+				m_Nodes.erase( iter );
+				for ( auto& child : children )
+				{
+					parent->m_Children.push_back( child );
+				}
 			}
 
 			return true;
@@ -987,7 +1203,7 @@ public:
 
 	template < typename T >
 	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, size_t >::
-	type CountAllOfType() const
+	type CountType() const
 	{
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
 
@@ -1031,7 +1247,7 @@ public:
 
 	template < typename T >
 	typename enable_if< is_base_of_v< Base, T > && is_default_constructible_v< T >, size_t >::
-	type CountAllOfExactType() const
+	type CountExactType() const
 	{
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
 
