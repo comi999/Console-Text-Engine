@@ -3,67 +3,43 @@
 
 #include "Buffer.hpp"
 #include "Registry.hpp"
-#include "Component.hpp"
 
-struct Base
+struct Component
 {
-    int num;
-
-    Base () { num = 1; }
-    virtual ~Base() { }
+    virtual ~Component() { }
 };
 
-struct DerivedA : Base
-{
-    DerivedA () { num = 2; }
-    virtual ~DerivedA() { }
-};
-
-struct DerivedB : DerivedA
-{
-    DerivedB () { num = 3; }
-    virtual ~DerivedB() { }
-};
-
-struct DerivedC : DerivedA
-{
-    DerivedC () { num = 4; }
-};
-
-struct DerivedD : DerivedB
-{
-    DerivedD () { num = 5; }
-};
-
-struct DerivedE : DerivedB
-{
-    DerivedE () { }
-    DerivedE ( int a ) { num = a; }
-};
+struct Graphic abstract : Component { };
+struct Sprite        : Graphic { };
+struct Shape         : Graphic { };
+struct TextBox       : Graphic { };
+struct Transform     : Component { };
+struct RectTransform : Transform { };
+struct Region        : Component { };
+struct CollisionBox  : Region { };
+struct Raycastable   : CollisionBox { };
+struct Interactable  : Raycastable { };
+struct Button        : Interactable { };
+struct Rigidbody     : Region { };
 
 
 int main()
 {
-    Registry< Base > reg;
 
-    Base* bas = reg.EmplaceBack< Base >();
 
-    DerivedC* derC = reg.EmplaceBack< DerivedC >();
-    DerivedD* derD = reg.EmplaceBack< DerivedD >();
-    DerivedB* derB = reg.EmplaceBack< DerivedB >();
-    DerivedE* derE = reg.EmplaceBack< DerivedE >( 25 );
-    DerivedE* derE2 = reg.EmplaceFront< DerivedE >( 43 );
-    DerivedE* derE3 = reg.Emplace< DerivedE >( 2, 65 );
-    DerivedE* derE4 = reg.Emplace< DerivedE >( 1, 89 );
-    DerivedE* derE5 = reg.Emplace< DerivedE >( 100, 99 );
 
-    reg.Debug();
 
-    auto result = reg.PopFront< Base >();
 
-    system( "cls" );
 
-    reg.Debug();
+
+
+
+
+
+
+
+
+
 
 
     Buffer buffer( 50, 50, 8, 12 );

@@ -929,6 +929,8 @@ public:
 
 			} while ( !nodes.empty() );
 
+			nodes = queue< INode* >();
+
 			for ( auto& child : children )
 			{
 				nodes.push( child );
@@ -1008,21 +1010,22 @@ public:
 	typename enable_if< is_base_of_v< Base, T >, bool >::
 	type ClearType()
 	{
-		queue< INode* > nodes;
-		size_t foundCount = 0;
+		list< INode* > children;
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
-		bool removedNode = false;
+		size_t valueCount = 0;
+		size_t childCount = 0;
+
 
 		if ( iter != m_Nodes.end() )
 		{
-			nodes.push( iter->second );
-			foundCount += iter->second->m_ValueCount;
-			removedNode = true;
+			children.push_back( iter->second );
+			valueCount += iter->second->m_ValueCount;
+			childCount += iter->second->m_ChildCount + 1;
 		}
 		else
 		{
+			queue< INode* > nodes;
 			nodes.push( ( INode* )&m_Root );
-			list< INode* > children;
 
 			do
 			{
@@ -1032,12 +1035,12 @@ public:
 				for ( auto& child : node->m_Children )
 				{
 					nodes.push( child );
-
 					Base* value = &child->AsNode< Base >()->m_Values.front();
 					if ( dynamic_cast< T* >( value ) )
 					{
 						children.push_back( child );
-						foundCount += child->m_ValueCount;
+						valueCount += child->m_ValueCount;
+						childCount += child->m_ChildCount + 1;
 					}
 				}
 
@@ -1047,36 +1050,58 @@ public:
 				}
 
 			} while ( !nodes.empty() );
-
-			for ( auto& child : children )
-			{
-				nodes.push( child );
-			}
 		}
 
-		if ( foundCount )
+		if ( children.size() )
 		{
+			INode* parent = children.front()->m_Parent;
+			
+			if ( parent )
+			{
+				for ( auto& child : children )
+				{
+					parent->m_Children.erase( find( parent->m_Children.begin(), parent->m_Children.end(), child ) );
+				}
+			}
+
+			while ( parent )
+			{
+				parent->m_ValueCount -= valueCount;
+				parent->m_ChildCount -= childCount;
+				parent = parent->m_Parent;
+			}
+
+			size_t baseHashCode = typeid( Base ).hash_code();
+
 			do
 			{
-				INode* node = nodes.front();
-				nodes.pop();
-
-				for ( T* ptr : values )
-				{
-					found.push_back( ptr );
-				}
+				INode* node = children.front();
+				children.pop_front();
 
 				for ( auto& child : node->m_Children )
 				{
-					nodes.push( child );
+					children.push_back( child );
 				}
 
-			} while ( !nodes.empty() );
+				if ( node->m_HashCode != baseHashCode )
+				{
+					m_Nodes.erase( m_Nodes.find( node->m_HashCode ) );
+					delete node;
+				}
+				else
+				{
+					node->AsNode< Base >()->m_Values.clear();
+					node->m_Children.clear();
+					node->m_ValueCount = 0;
+					node->m_ChildCount = 0;
+				}
 
-			return found;
+			} while ( !children.empty() );
+
+			return true;
 		}
 
-		return vector< T* >();
+		return false;
 	}
 
 	template < typename T >
@@ -1182,24 +1207,52 @@ public:
 	typename enable_if< is_base_of_v< Base, T >, bool >::
 	type HasType() const
 	{
+		auto iter = m_Nodes.find( typeid( T ).hash_code() );
 
+		if ( iter != m_Nodes.end() )
+		{
+			return &iter->second->AsNode< T >()->m_Values.front();
+		}
+
+		queue< INode* > nodes;
+		nodes.push( ( INode* )&m_Root );
+
+		do
+		{
+			INode* node = nodes.front();
+			nodes.pop();
+
+			for ( auto& child : node->m_Children )
+			{
+				nodes.push( child );
+
+				Base* value = &child->AsNode< Base >()->m_Values.front();
+				if ( dynamic_cast< T* >( value ) )
+				{
+					return true;
+				}
+			}
+
+		} while ( !nodes.empty() );
+
+		return false;
 	}
 
 	template < typename T >
 	typename enable_if< is_base_of_v< Base, T >, bool >::
 	type HasExactType() const
 	{
-
+		return m_Nodes.find( typeid( T ).hash_code() ) != m_Nodes.end();
 	}
 
-	size_t Count() const
+	size_t CountAll() const
 	{
 		return m_Root.m_ValueCount;
 	}
 
 	template < typename T >
 	typename enable_if< is_base_of_v< Base, T >, size_t >::
-	type CountType() const
+	type CountOfType() const
 	{
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
 
@@ -1242,7 +1295,7 @@ public:
 
 	template < typename T >
 	typename enable_if< is_base_of_v< Base, T >, size_t >::
-	type CountExactType() const
+	type CountOfExactType() const
 	{
 		auto iter = m_Nodes.find( typeid( T ).hash_code() );
 
